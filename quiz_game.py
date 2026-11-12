@@ -52,9 +52,34 @@ class QuizGame:
 
     def play(self):
         print("👉 퀴즈 풀기를 선택했습니다.")
+
+        # 3) 퀴즈가 없으면 안내하고 돌아가기
+        if not self.quizzes:
+            print("⚠️  등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+
+        total = len(self.quizzes)
+        correct = 0                      # 이번 판에 맞힌 개수 (매번 0부터)
+
+        # 1) 맞은 개수 세기
         for quiz in self.quizzes:
-            quiz.show()        # 문제 보여주고
-            quiz.check()       # 답 확인하기
+            quiz.show()
+            if quiz.check():             # 입력은 여기서 딱 한 번
+                correct += 1
+
+        # 2) 결과 출력 (반복문이 끝난 뒤 한 번만)
+        score = correct * 100 // total   # 100점 만점으로 환산
+        print("=" * 40)
+        print(f" 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
+
+        if correct == total:
+            print("🎉 모든 문제를 맞췄습니다! 축하합니다! 🎉")
+
+        # 최고 점수는 판이 끝난 뒤 비교해서 갱신
+        if score > self.best_score:
+            self.best_score = score
+            print("✨ 새로운 최고 점수입니다!")
+        print("=" * 40)
 
     def add_quiz(self):
         print("👉 퀴즈 추가는 준비 중입니다.")
