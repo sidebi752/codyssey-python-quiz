@@ -13,19 +13,31 @@ class Quiz:
             print(f"{i}. {c}")   # "1. 1개" 형태로 출력
 
     def check(self):
-        user = input("정답 번호를 입력하세요: ")
-        try:
-            number = int(user)        # 숫자 변환 시도
-        except ValueError:            # 변환 실패하면 여기로!
-            print("⚠️  숫자를 입력해주세요.")
-            return False
+        while True:
+            user = input("정답 번호를 입력하세요: ").strip()
+             # ① 빈 입력
+            if user == "":
+                print("⚠️  입력이 비어 있어요. 번호를 입력해주세요.")
+                continue
+             # ② 숫자 변환 실패 (abc, 1.5 등)   
+            try:
+                number = int(user)        # 숫자 변환 시도
+            except ValueError:            # 변환 실패하면 여기로!
+                print("⚠️  1~4 사이의 숫자를 입력해주세요.")
+                continue
+            # ③ 범위 밖 (0, 7, -1 등)
+            if not 1 <= number <= len(self.choices):
+                print(f"⚠️  1~{len(self.choices)} 사이의 번호를 입력해주세요.")
+                continue
+            
+            break   # 여기까지 오면 정상 입력이므로 반복문 탈출
 
         if number == self.answer:
-            print("정답입니다! 🎉")
-            return True
+                print("정답입니다! 🎉")
+                return True
         else:
-            print(f"틀렸어요. 정답은 {self.answer}번이에요. 😢")
-            return False
+                print(f"틀렸어요. 정답은 {self.answer}번이에요. 😢")
+                return False
 
 def create_default_quizzes():
     """기본 퀴즈 목록을 만들어서 돌려준다."""
