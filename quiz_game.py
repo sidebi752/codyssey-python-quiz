@@ -1,6 +1,47 @@
 # 자전거 상식 퀴즈 게임 - Quiz(문제 1개), QuizGame(게임 진행) 클래스로 구성
 
 # 1) 클래스는 맨 위에 한 번만 정의
+
+def get_text(prompt):
+    """빈칸이 아닌 글자를 입력받을 때까지 반복해서 묻는다."""
+    while True:
+        text = input(prompt).strip()
+        if text == "":
+            print("⚠️  비어 있어요. 내용을 입력해주세요.")
+            continue
+        return text          # 통과하면 그 글자를 돌려주고 끝
+
+def get_number(prompt, min_value, max_value):
+    """min_value ~ max_value 사이의 정수를 받을 때까지 반복해서 묻는다."""
+    while True:
+        user = input(prompt).strip()
+
+        if user == "":
+            print("⚠️  입력이 비어 있어요. 번호를 입력해주세요.")
+            continue
+
+        try:
+            number = int(user)
+        except ValueError:
+            print("⚠️  1~4 사이의 숫자를 입력해주세요.")
+            continue
+
+        if not min_value <= number <= max_value:
+            print(f"⚠️  {min_value}~{max_value} 사이의 번호를 입력해주세요.")
+            continue
+
+        return number
+
+def create_default_quizzes():
+    """기본 퀴즈 목록을 만들어서 돌려준다."""
+    return [
+        Quiz("두발자전거의 바퀴는 몇 개?", ["1개", "2개", "3개", "4개"], 2),
+        Quiz("대전광역시 공영자전거 이름은?", ["타슬라", "타슈", "어울링", "따릉이"], 2),
+        Quiz("자전거 탈 때 사람이 착용하는 물건이 아닌 것은?", ["헬멧", "장갑", "우비", "타이어"], 4),
+        Quiz("자전거의 주요 부품이 아닌 것은?", ["프레임", "바퀴", "핸들", "번호판"], 4),
+        Quiz("다음 중 자전거 브랜드인 것은?", ["삼천리", "나이키", "칠곡", "코디세이"], 1),
+    ]
+
 class Quiz:
     def __init__(self, question, choices, answer):
         self.question = question
@@ -13,24 +54,7 @@ class Quiz:
             print(f"{i}. {c}")   # "1. 1개" 형태로 출력
 
     def check(self):
-        while True:
-            user = input("정답 번호를 입력하세요: ").strip()
-             # ① 빈 입력
-            if user == "":
-                print("⚠️  입력이 비어 있어요. 번호를 입력해주세요.")
-                continue
-             # ② 숫자 변환 실패 (abc, 1.5 등)   
-            try:
-                number = int(user)        # 숫자 변환 시도
-            except ValueError:            # 변환 실패하면 여기로!
-                print("⚠️  1~4 사이의 숫자를 입력해주세요.")
-                continue
-            # ③ 범위 밖 (0, 7, -1 등)
-            if not 1 <= number <= len(self.choices):
-                print(f"⚠️  1~{len(self.choices)} 사이의 번호를 입력해주세요.")
-                continue
-            
-            break   # 여기까지 오면 정상 입력이므로 반복문 탈출
+        number = get_number("번호를 입력하세요: ", 1, len(self.choices))   # 1~4 사이의 숫자 입력
 
         if number == self.answer:
                 print("정답입니다! 🎉")
@@ -38,17 +62,7 @@ class Quiz:
         else:
                 print(f"틀렸어요. 정답은 {self.answer}번이에요. 😢")
                 return False
-
-def create_default_quizzes():
-    """기본 퀴즈 목록을 만들어서 돌려준다."""
-    return [
-        Quiz("두발자전거의 바퀴는 몇 개?", ["1개", "2개", "3개", "4개"], 2),
-        Quiz("대전광역시 공영자전거 이름은?", ["타슬라", "타슈", "어울링", "따릉이"], 2),
-        Quiz("자전거 탈 때 사람이 착용하는 물건이 아닌 것은?", ["헬멧", "장갑", "우비", "타이어"], 4),
-        Quiz("자전거의 주요 부품이 아닌 것은?", ["프레임", "바퀴", "핸들", "번호판"], 4),
-        Quiz("다음 중 자전거 브랜드인 것은?", ["삼천리", "나이키", "칠곡", "코디세이"], 1),
-    ]
-
+        
 class QuizGame:
     def __init__(self):
         self.quizzes = create_default_quizzes()   # 문제 카드 묶음
@@ -94,13 +108,43 @@ class QuizGame:
         print("=" * 40)
 
     def add_quiz(self):
-        print("👉 퀴즈 추가는 준비 중입니다.")
+        print("📌 새로운 퀴즈를 추가합니다.")
 
+        # ① 문제 (글자)
+        question = get_text("문제를 입력하세요: ")
+
+        # ② 선택지 4개 (글자 4번)
+        choices = []
+        for i in range(1, 5):
+            choice = get_text(f"선택지 {i}: ")
+            choices.append(choice)
+
+        # ③ 정답 번호 (숫자 1~4)
+        answer = get_number("정답 번호를 입력하세요 (1-4): ", 1, 4)
+
+        # ④ Quiz 카드를 만들어서 묶음에 추가
+        new_quiz = Quiz(question, choices, answer)
+        self.quizzes.append(new_quiz)
+
+        # ⑤ 완료 메시지
+        print(f"✅ 퀴즈가 추가되었습니다! (현재 총 {len(self.quizzes)}개)")
+        
     def list_quizzes(self):
-        print("👉 퀴즈 목록은 준비 중입니다.")
+        if not self.quizzes:
+            print("⚠️  등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+        
+        print(f"📋 등록된 퀴즈 목록: (총 {len(self.quizzes)}개)")
+        print("-" * 40)
+        for i, quiz in enumerate(self.quizzes, start=1):
+            print(f"{i}. {quiz.question}")
+        print("-" * 40)
 
     def show_score(self):
-        print("👉 점수 확인은 준비 중입니다.")
+        if self.best_score == 0:
+            print("아직 퀴즈를 풀지 않았습니다. 먼저 퀴즈를 풀어보세요!")
+        else:
+            print(f"현재 최고 점수는 {self.best_score}점입니다.")
 
     def run(self):
         while True:
