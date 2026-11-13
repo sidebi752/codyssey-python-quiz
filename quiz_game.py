@@ -1,6 +1,10 @@
 # 자전거 상식 퀴즈 게임 - Quiz(문제 1개), QuizGame(게임 진행) 클래스로 구성
 
 # 1) 클래스는 맨 위에 한 번만 정의
+import json
+from pathlib import Path
+
+STATE_FILE = Path(__file__).parent / "state.json" 
 
 def get_text(prompt):
     """빈칸이 아닌 글자를 입력받을 때까지 반복해서 묻는다."""
@@ -48,6 +52,14 @@ class Quiz:
         self.choices = choices
         self.answer = answer
 
+    def to_dict(self):
+        """저장용: Quiz 객체 → 딕셔너리"""
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
+
     def show(self):
         print(self.question)
         for i, c in enumerate(self.choices, start=1):
@@ -65,8 +77,43 @@ class Quiz:
         
 class QuizGame:
     def __init__(self):
-        self.quizzes = create_default_quizzes()   # 문제 카드 묶음
-        self.best_score = 0                       # 최고 점수 (나중에 사용)
+        self.quizzes = []
+        self.best_score = 0
+        self.load()                     # 시작할 때 파일에서 불러오기
+
+    def load(self):
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            self.quizzes = []
+            for item in data["quizzes"]:          # 딕셔너리 → Quiz 객체
+                quiz = Quiz(item["question"], item["choices"], item["answer"])
+                self.quizzes.append(quiz)
+            self.best_score = data["best_score"]
+            print(f"📂 저장된 데이터를 불러왔습니다. "
+                  f"(퀴즈 {len(self.quizzes)}개, 최고점수 {self.best_score}점)")
+
+        except FileNotFoundError:                 # ② 첫 실행
+            print("📂 저장 파일이 없어 기본 퀴즈로 시작합니다.")
+            self.quizzes = create_default_quizzes()
+            self.best_score = 0
+
+        except (json.JSONDecodeError, KeyError, TypeError):   # ③ 손상
+            print("⚠️  저장 파일이 손상되어 기본 퀴즈로 복구합니다.")
+            self.quizzes = create_default_quizzes()
+            self.best_score = 0
+
+    def save(self):
+        data = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],   # Quiz → 딕셔너리
+            "best_score": self.best_score,
+        }
+        try:                                       # ④ 쓰기 오류 대비
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except OSError:
+            print("⚠️  파일 저장에 실패했습니다.")                    # 최고 점수 (나중에 사용)
 
     def show_menu(self):
         print("===== 자전거 퀴즈 게임 =====")
@@ -104,6 +151,7 @@ class QuizGame:
         # 최고 점수는 판이 끝난 뒤 비교해서 갱신
         if score > self.best_score:
             self.best_score = score
+            self.save()  # 최고 점수 갱신 후 저장
             print("✨ 새로운 최고 점수입니다!")
         print("=" * 40)
 
@@ -125,7 +173,7 @@ class QuizGame:
         # ④ Quiz 카드를 만들어서 묶음에 추가
         new_quiz = Quiz(question, choices, answer)
         self.quizzes.append(new_quiz)
-
+        self.save()  # 저장
         # ⑤ 완료 메시지
         print(f"✅ 퀴즈가 추가되었습니다! (현재 총 {len(self.quizzes)}개)")
         
@@ -152,6 +200,7 @@ class QuizGame:
             choice = input("번호를 선택하세요: ").strip()
 
             if choice == "5":
+                self.save()  # 종료 전에 저장
                 print("게임을 종료합니다. 안녕히 가세요! 👋")
                 break
             elif choice == "1":
@@ -168,3 +217,4 @@ class QuizGame:
 if __name__ == "__main__":
     game = QuizGame()   # 진행자(게임 객체) 만들기
     game.run()          # 게임 시작
+
