@@ -216,16 +216,3 @@ if __name__ == "__main__":
     game = QuizGame()   # 진행자(게임 객체) 만들기
     game.run()          # 게임 시작
 
-
-
-def load_state():
-    try:
-        with open("state.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {"quizzes": [], "best_score": 0}  # 없거나 손상 시 초기화
-
-def save_state(state):
-    with open("state.json", "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
- # 나중에 추가하면 좋은 것 - 퀴즈 추가할 때 문제 혹은 선택지 중복 방지
