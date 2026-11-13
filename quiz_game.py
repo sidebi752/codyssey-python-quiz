@@ -151,6 +151,7 @@ class QuizGame:
         # 최고 점수는 판이 끝난 뒤 비교해서 갱신
         if score > self.best_score:
             self.best_score = score
+            self.save()  # 최고 점수 갱신 후 저장
             print("✨ 새로운 최고 점수입니다!")
         print("=" * 40)
 
@@ -172,7 +173,7 @@ class QuizGame:
         # ④ Quiz 카드를 만들어서 묶음에 추가
         new_quiz = Quiz(question, choices, answer)
         self.quizzes.append(new_quiz)
-
+        self.save()  # 저장
         # ⑤ 완료 메시지
         print(f"✅ 퀴즈가 추가되었습니다! (현재 총 {len(self.quizzes)}개)")
         
@@ -199,6 +200,7 @@ class QuizGame:
             choice = input("번호를 선택하세요: ").strip()
 
             if choice == "5":
+                self.save()  # 종료 전에 저장
                 print("게임을 종료합니다. 안녕히 가세요! 👋")
                 break
             elif choice == "1":
