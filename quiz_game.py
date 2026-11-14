@@ -69,11 +69,11 @@ class Quiz:
         number = get_number("번호를 입력하세요: ", 1, len(self.choices))   # 1~4 사이의 숫자 입력
 
         if number == self.answer:
-                print("정답입니다! 🎉")
-                return True
+            print("정답입니다! 🎉")
+            return True
         else:
-                print(f"틀렸어요. 정답은 {self.answer}번이에요. 😢")
-                return False
+            print(f"틀렸어요. 정답은 {self.answer}번이에요. 😢")
+            return False
         
 class QuizGame:
     def __init__(self):
@@ -216,5 +216,9 @@ class QuizGame:
 
 if __name__ == "__main__":
     game = QuizGame()   # 진행자(게임 객체) 만들기
-    game.run()          # 게임 시작
+    try:
+        game.run()
+    except (KeyboardInterrupt, EOFError):
+        print("\n입력이 중단되어 저장 후 종료합니다.")
+        game.save()
 
